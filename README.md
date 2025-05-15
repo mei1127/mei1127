@@ -1,6 +1,6 @@
 - 👋 Hi, I’m @mei1127
 - 👀 I’m interested in sports like frisbee、swimming、table tennis、badminton and so on.
-- 🌱 I’m currently learning javascript、python and vue
+- 🌱 I’m currently learning something related to WebGPU
 - 💞️ I’m looking to collaborate on everything
 - 📫 How to reach me :shanxing.mei@intel.com
 
