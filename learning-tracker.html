@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Learning Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="date"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .achievements-list {
+            margin-top: 20px;
+        }
+
+        .achievement-item {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .achievement-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .achievement-date {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #ff3838;
+        }
+
+        .achievement-content {
+            color: #333;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Daily Learning Tracker</h1>
+        <p class="subtitle">Record your daily achievements and track your learning journey</p>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Total Entries</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="thisMonth">0</div>
+                <div class="stat-label">This Month</div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label for="achievement">What did you learn today?</label>
+                <textarea id="achievement" placeholder="Describe your learning achievements..." required></textarea>
+            </div>
+            <button class="btn" onclick="addAchievement()">Add Achievement</button>
+        </div>
+
+        <div class="achievements-list" id="achievementsList"></div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'learningAchievements';
+
+        function initDate() {
+            const dateInput = document.getElementById('date');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+            dateInput.max = today;
+        }
+
+        function loadAchievements() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function saveAchievements(achievements) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(achievements));
+        }
+
+        function addAchievement() {
+            const dateInput = document.getElementById('date');
+            const achievementInput = document.getElementById('achievement');
+
+            const date = dateInput.value;
+            const content = achievementInput.value.trim();
+
+            if (!date || !content) {
+                alert('Please fill in both date and achievement fields.');
+                return;
+            }
+
+            const achievements = loadAchievements();
+            achievements.unshift({
+                id: Date.now(),
+                date: date,
+                content: content
+            });
+
+            saveAchievements(achievements);
+            achievementInput.value = '';
+            renderAchievements();
+        }
+
+        function deleteAchievement(id) {
+            if (!confirm('Are you sure you want to delete this achievement?')) {
+                return;
+            }
+
+            let achievements = loadAchievements();
+            achievements = achievements.filter(a => a.id !== id);
+            saveAchievements(achievements);
+            renderAchievements();
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function updateStats() {
+            const achievements = loadAchievements();
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            const thisMonthCount = achievements.filter(a => {
+                const date = new Date(a.date + 'T00:00:00');
+                return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            }).length;
+
+            document.getElementById('totalCount').textContent = achievements.length;
+            document.getElementById('thisMonth').textContent = thisMonthCount;
+        }
+
+        function renderAchievements() {
+            const achievements = loadAchievements();
+            const container = document.getElementById('achievementsList');
+
+            if (achievements.length === 0) {
+                container.innerHTML = '<div class="empty-state">No achievements recorded yet. Start tracking your learning journey!</div>';
+                updateStats();
+                return;
+            }
+
+            container.innerHTML = achievements.map(achievement => `
+                <div class="achievement-item">
+                    <div class="achievement-header">
+                        <span class="achievement-date">${formatDate(achievement.date)}</span>
+                        <button class="delete-btn" onclick="deleteAchievement(${achievement.id})">Delete</button>
+                    </div>
+                    <div class="achievement-content">${escapeHtml(achievement.content)}</div>
+                </div>
+            `).join('');
+
+            updateStats();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('achievement').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                addAchievement();
+            }
+        });
+
+        initDate();
+        renderAchievements();
+    </script>
+</body>
+</html>
